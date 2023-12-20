@@ -33,9 +33,13 @@ for url in video_url:
         #get the htlm of the page
         html = driver.page_source
 
-        # Criar o caminho completo para o arquivo 'lolesports.txt' dentro da pasta 'data/raw'
         file_name = f"lolesports_{count}.txt"
-        file_path = os.path.join('data', 'raw', file_name)
+
+        # Obter o diretório do script atual
+        script_directory = os.path.dirname(os.path.abspath(__file__))
+
+        # Construir o caminho completo para o arquivo 'lolesports.txt' dentro da pasta 'data/raw'
+        file_path = os.path.join(script_directory, '..', 'data', 'raw', file_name)
 
         # Garantir que o diretório 'data/raw' exista
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
