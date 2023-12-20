@@ -1,20 +1,53 @@
-import requests
-from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
+import time
+import os
 
-url = "https://lolesports.com/vod/110471059652887260/1/ckoxgB42rhE"
+video_url = ["https://lolesports.com/vod/110471059652887260/1/ckoxgB42rhE",
+             "https://lolesports.com/vod/110471059652887260/2/Hu26a6o4thc",
+             "https://lolesports.com/vod/110471059652887260/3/SBJ-tuj1jSU",
+             "https://lolesports.com/vod/110471059652887260/4/oYHwbmzb_vM"]
 
-# Realizar a solicitação HTTP
-response = requests.get(url)
+driver = webdriver.Chrome()
+count = 1
+for url in video_url:
+    try:
+        driver.get(url)
+        
+        actions = ActionChains(driver)
 
-# Verificar se a solicitação foi bem-sucedida (código de status 200)
-if response.status_code == 200:
-    # Parsear o conteúdo HTML com BeautifulSoup
-    soup = BeautifulSoup(response.text, 'html.parser')
+        print("Waiting for video to load")
+        time.sleep(5)
+        print("Video loaded")
 
-    # salvar o conteúdo HTML em um arquivo txt
-    with open('lolesports.txt', 'w') as file:
-        file.write(soup.prettify())
-    # # Imprimir o HTML
-    # print(soup.prettify())
-else:
-    print(f"Erro na solicitação. Código de status: {response.status_code}")
+        start_button = driver.find_element(By.XPATH, "//*[@class='attached']")
+        start_button.click()
+
+        time.sleep(2)
+        #press the 9 key to go back 10 seconds
+        actions.send_keys(Keys.NUMPAD9).perform()
+        time.sleep(2)
+
+        #get the htlm of the page
+        html = driver.page_source
+
+        # Criar o caminho completo para o arquivo 'lolesports.txt' dentro da pasta 'data/raw'
+        file_name = f"lolesports_{count}.txt"
+        file_path = os.path.join('data', 'raw', file_name)
+
+        # Garantir que o diretório 'data/raw' exista
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+        # Salvar a saída no arquivo
+        with open(file_path, 'w', encoding='utf-8') as file:
+            file.write(html)
+        
+        count += 1
+    except Exception as e:
+        print(e)
+        
+print("Closing driver")
+driver.quit()
+
