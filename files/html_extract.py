@@ -14,7 +14,7 @@ def get_html_file(file_name):
     
     return html
 
-def get_lane_players_stats(html, soup, lane):
+def get_lane_players_stats(soup, lane):
 
     if lane == 'top':
         # Tratamento especial devido as classes obtidas como o crawler
@@ -54,7 +54,9 @@ lanes = ['top', 'jungle', 'mid', 'bottom', 'support']
 # lanes = ['bottom']
 
 #ler cada arquivo da pasta raw
-for file_name in os.listdir(os.path.join(script_directory, '..', 'data', 'raw')):
+files = ["late_lolesports_1.txt"]
+# for file_name in os.listdir(os.path.join(script_directory, '..', 'data', 'raw')):
+for file_name in files:
     # Ignorar arquivos que não terminam com '.txt'
     if not file_name.endswith('.txt'):
         continue
@@ -66,7 +68,78 @@ for file_name in os.listdir(os.path.join(script_directory, '..', 'data', 'raw'))
     soup = BeautifulSoup(html, 'html.parser')
 
     print(f"Arquivo: {file_name}")
+
+    stats_team_summary = soup.find('div', {'class': 'StatsTeamsSummary'})
+    
+    # Get dragons stats
+    dragons = stats_team_summary.find('div', {'class': 'dragons'})
+
+    blue_team_dragons = dragons.find_all('div', {'class': 'blue-team'})
+    red_team_dragons = dragons.find_all('div', {'class': 'red-team'})
+
+    blue_team_dragons_list = []
+    for blue_team_dragon in blue_team_dragons:
+
+        dragon_divs = blue_team_dragon.find_all('div')
+
+        for div in dragon_divs:
+            if 'class' in div.attrs:
+                classes = div['class']
+                blue_team_dragons_list.append(classes[1])
+    
+    red_team_dragons_list = []
+    for red_team_dragon in red_team_dragons:
+
+        dragon_divs = red_team_dragon.find_all('div')
+
+        for div in dragon_divs:
+            if 'class' in div.attrs:
+                classes = div['class']
+                red_team_dragons_list.append(classes[1])
+    
+    # Get gold stats
+    gold = stats_team_summary.find('div', {'class': 'gold'})
+    totals = gold.find('div', {'class': 'totals'})
+    blue_team_gold = totals.find('div', {'class': 'blue-team'}).text
+    red_team_gold = totals.find('div', {'class': 'red-team'}).text
+
+    # Get details
+    details = stats_team_summary.find('div', {'class': 'details'})
+    blue_team_details = details.find('div', {'class': 'blue-team'})
+    blue_team_inhibitors = blue_team_details.find('div', {'class': 'stat inhibitors'}).text
+    blue_team_barons = blue_team_details.find('div', {'class': 'stat barons'}).text
+    blue_team_towers = blue_team_details.find('div', {'class': 'stat towers'}).text
+    blue_team_kills = blue_team_details.find('div', {'class': 'stat kills'}).text
+
+    red_team_details = details.find('div', {'class': 'red-team'})
+    red_team_inhibitors = red_team_details.find('div', {'class': 'stat inhibitors'}).text
+    red_team_barons = red_team_details.find('div', {'class': 'stat barons'}).text
+    red_team_towers = red_team_details.find('div', {'class': 'stat towers'}).text
+    red_team_kills = red_team_details.find('div', {'class': 'stat kills'}).text
+
+    stats_team_playes = soup.find('div', {'class': 'StatsTeamsPlayers'})
+
+    blue_team = stats_team_playes.find('div', {'class': 'blue-team'})
+    print("Blue Team")
+    print("Dragons: ", blue_team_dragons_list)
+    print("Gold: ", blue_team_gold)
+    print("Inhibitors: ", blue_team_inhibitors)
+    print("Barons: ", blue_team_barons)
+    print("Towers: ", blue_team_towers)
+    print("Kills: ", blue_team_kills)
     for lane in lanes:
-        print(f"Jogadores {lane}:")
-        get_lane_players_stats(html, soup, lane)
+        get_lane_players_stats(blue_team, lane)
+
+    red_team = stats_team_playes.find('div', {'class': 'red-team'})
+    print("Red Team")
+    print("Dragons: ", red_team_dragons_list)
+    print("Gold: ", red_team_gold)
+    print("Inhibitors: ", red_team_inhibitors)
+    print("Barons: ", red_team_barons)
+    print("Towers: ", red_team_towers)
+    print("Kills: ", red_team_kills)
+    for lane in lanes:
+        get_lane_players_stats(red_team, lane)
+
+
     print("\n")
