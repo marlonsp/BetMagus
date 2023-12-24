@@ -36,6 +36,7 @@ def get_lane_players_stats(soup, lane):
     for lane_player in lane_players:
         # Obter o nome do jogador
         player_name = lane_player.find('div', {'class': 'name'}).text
+        player_name = player_name.split(" ")[1]
 
         # Obter as estatísticas de kills, deaths e assists
         kda_element = lane_player.find('div', {'class': 'stat kda'})
@@ -79,7 +80,7 @@ os.makedirs(os.path.dirname(file_path), exist_ok=True)
 # Create a cvs file to save the data
 with open(file_path, 'w', newline='') as file:
     writer = csv.writer(file)
-    writer.writerow(["game",
+    writer.writerow(["game","game_time",
                      "blue_team", "blue_team_dragons", "blue_team_gold", "blue_team_inhibitors", "blue_team_barons", "blue_team_towers", "blue_team_kills",
                      "blue_team_top", "blue_team_top_kills", "blue_team_top_deaths", "blue_team_top_assists", "blue_team_top_cs", "blue_team_top_gold",
                      "blue_team_jungle", "blue_team_jungle_kills", "blue_team_jungle_deaths", "blue_team_jungle_assists", "blue_team_jungle_cs", "blue_team_jungle_gold",
@@ -110,6 +111,7 @@ for file_name in os.listdir(os.path.join(script_directory, '..', 'data', 'raw'))
 
     # print(f"Arquivo: {file_name}")
     # print(" ")
+    game_time = file_name.split("_")[0]
 
     stats_team_summary = soup.find('div', {'class': 'StatsTeamsSummary'})
     
@@ -188,14 +190,14 @@ for file_name in os.listdir(os.path.join(script_directory, '..', 'data', 'raw'))
     red_team_players_stats = []
     for lane in lanes:
         red_team_players_stats += get_lane_players_stats(red_team, lane)
-
+    game_id = file_name.split("_")[2].split(".")[0]
     # print(" ")
     # print("-----------------------------------------")
     
     # Write the data in the csv file
     with open(file_path, 'a', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow([file_name,
+        writer.writerow([game_id, game_time,
                          blue_team_name, blue_team_dragons_list, blue_team_gold, blue_team_inhibitors, blue_team_barons, blue_team_towers, blue_team_kills] + blue_team_players_stats +
                          [red_team_name, red_team_dragons_list, red_team_gold, red_team_inhibitors, red_team_barons, red_team_towers, red_team_kills] + red_team_players_stats
                         )
